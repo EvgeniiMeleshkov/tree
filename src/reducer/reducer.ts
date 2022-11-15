@@ -1,5 +1,6 @@
-import {AppDispatch, TypedDispatch} from '../redux/store';
+import {AppRootStateType, TypedDispatch} from '../redux/store';
 import {api} from '../api/api';
+import {RowFormValuesType} from '../components/RowForm';
 
 export type EntityType = {
     'id': number,
@@ -14,7 +15,7 @@ export type EntityType = {
     'equipmentCosts': number,
     'overheads': number,
     'estimatedProfit': number,
-    'child'?: any
+    'child': any
 }
 export type TreeType = Array<EntityType>
 export type InitType = {
@@ -49,7 +50,10 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
         case 'APP/CREATE-STRING':
             return {...state, tree: [...state.tree, action.payload.entity]}
         case 'APP/UPDATE-STRING':
-            return {...state}
+            return {...state, tree: state.tree.map(el => el.id === action.payload.id
+                ? {...el, ...action.payload.str}
+                    : el
+                )}
         case 'APP/DELETE-STRING':
             return {...state}
         default:
@@ -73,11 +77,12 @@ export const createStringAC = (entity: EntityType) => {
         }
     } as const
 }
-export const updateStringAC = (tree: EntityType) => {
+export const updateStringAC = (id: number, str: EntityType) => {
     return {
         type: 'APP/UPDATE-STRING',
         payload: {
-            tree
+            id,
+            str
         }
     } as const
 }
@@ -107,10 +112,14 @@ export const createStringTC = (rowName: string, parentId: null | number) => asyn
     const res = await api.createRowInEntity(rowName, parentId)
     dispatch(createStringAC(res.data.current))
 }
-export const updateStringTC = (rID: number, entity: EntityType) => async (dispatch: TypedDispatch) => {
-    const res = await api.updateRow(rID)
+export const updateStringTC = (rID: number, data: RowFormValuesType) =>
+    async (dispatch: TypedDispatch, getState: () => AppRootStateType) => {
+    const old = getState().app.tree.find(el => el.id === rID)!
+        const newData = {...old, ...data}
+        console.log(newData)
+    const res = await api.updateRow(rID, newData)
     console.log(res.data.current)
-    //dispatch(createStringAC(res.data.current))
+    dispatch(updateStringAC(rID, res.data.current))
 }
 export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch) => {
     const res = await api.deleteRow(rID)

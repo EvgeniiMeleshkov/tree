@@ -1,4 +1,5 @@
 import axios from 'axios';
+import {EntityType} from '../reducer/reducer';
 
 const instance = axios.create({
     baseURL: 'http://185.244.172.108:8081/v1/outlay-rows/entity/2493/row/'
@@ -24,8 +25,8 @@ export const api = {
                 "supportCosts": 0
             })
     },
-    updateRow(rID: number) {
-        return instance.post(`${rID}/update`)
+    updateRow(rID: number, data: EntityType) {
+        return instance.post(`${rID}/update`, data)
     },
     deleteRow(rID: number) {
         return instance.delete(`${rID}/delete`)

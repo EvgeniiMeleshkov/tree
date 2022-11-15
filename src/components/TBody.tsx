@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {createStringTC, deleteStringTC, EntityType, setEditModeAC} from '../reducer/reducer';
+import {deleteStringTC, EntityType} from '../reducer/reducer';
 import FolderSharpIcon from '@mui/icons-material/FolderSharp';
 import TextSnippetSharpIcon from '@mui/icons-material/TextSnippetSharp';
 import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
@@ -29,16 +29,17 @@ const TBody = ({tree, setEdit}: TBodyPropsType) => {
                         } : () => {
                         }
                     } onDoubleClick={() => setEdit(row.id)} key={row.id}>
-                        <span onMouseLeave={()=>setFlag(true)}>
+                        <span onMouseLeave={() => setFlag(true)}>
                             {flag ?
-                                <FolderSharpIcon onMouseOver={()=>setFlag(false)} style={{color: row.child.length > 0 ? 'blue' : 'green'}}/>
+                                <FolderSharpIcon onMouseOver={() => setFlag(false)}
+                                                 style={{color: row.child.length > 0 ? 'blue' : 'green'}}/>
                                 :
                                 <>
                                     <FolderSharpIcon style={{color: row.child.length > 0 ? 'blue' : 'green'}}>
 
                                     </FolderSharpIcon>
                                     <TextSnippetSharpIcon/>
-                                    <DeleteForeverOutlinedIcon onClick={()=>dispatch(deleteStringTC(row.id))}/>
+                                    <DeleteForeverOutlinedIcon onClick={() => dispatch(deleteStringTC(row.id))}/>
                                 </>
                             }
                         </span>
@@ -52,15 +53,8 @@ const TBody = ({tree, setEdit}: TBodyPropsType) => {
                             </>
                             :
                             <div>
-                                {/*<form >*/}
-                                {/*    <input placeholder={row.rowName}/>*/}
-                                {/*    <input placeholder={row.salary.toString()}/>*/}
-                                {/*    <input placeholder={row.equipmentCosts.toString()}/>*/}
-                                {/*    <input placeholder={row.mainCosts.toString()}/>*/}
-                                {/*    <input placeholder={row.estimatedProfit.toString()}/>*/}
-                                {/*</form>*/}
 
-                            <RowForm rID={row.id}/>
+                                <RowForm rID={row.id}/>
 
                             </div>
                         }
