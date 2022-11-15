@@ -1,9 +1,11 @@
-import React from 'react';
-import {createStringTC, EntityType, setEditModeAC} from '../reducer/reducer';
-import {TableBody, TableCell, TableRow} from '@mui/material';
+import React, {useState} from 'react';
+import {createStringTC, deleteStringTC, EntityType, setEditModeAC} from '../reducer/reducer';
 import FolderSharpIcon from '@mui/icons-material/FolderSharp';
+import TextSnippetSharpIcon from '@mui/icons-material/TextSnippetSharp';
+import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
 import {useSelector} from 'react-redux';
 import {AppRootStateType, useTypedDispatch} from '../redux/store';
+import RowForm from './RowForm';
 
 type TBodyPropsType = {
     tree: EntityType[]
@@ -13,54 +15,65 @@ type TBodyPropsType = {
 const TBody = ({tree, setEdit}: TBodyPropsType) => {
     const edit = useSelector<AppRootStateType, boolean>(state => state.app.editeMode)
     const dispatch = useTypedDispatch()
+
+    const [flag, setFlag] = useState(true)
+
     return (
-        <TableBody>
+        <div>
             {tree.map((row: EntityType) => (
-                <>
-                    <TableRow onBlur={edit ?
+                <div key={row.id}>
+                    <div onBlur={edit ?
                         () => {
-                            dispatch(createStringTC('TEST', row.id))
-                            dispatch(setEditModeAC(false, row.id))
+                            //dispatch(createStringTC('TEST', row.id))
+                            //dispatch(setEditModeAC(false, row.id))
                         } : () => {
                         }
                     } onDoubleClick={() => setEdit(row.id)} key={row.id}>
-                        <TableCell component="th" scope="row">
-                            <FolderSharpIcon style={{color: row.child.length > 0 ? 'blue' : 'green'}}/>
-                        </TableCell>
+                        <span onMouseLeave={()=>setFlag(true)}>
+                            {flag ?
+                                <FolderSharpIcon onMouseOver={()=>setFlag(false)} style={{color: row.child.length > 0 ? 'blue' : 'green'}}/>
+                                :
+                                <>
+                                    <FolderSharpIcon style={{color: row.child.length > 0 ? 'blue' : 'green'}}>
+
+                                    </FolderSharpIcon>
+                                    <TextSnippetSharpIcon/>
+                                    <DeleteForeverOutlinedIcon onClick={()=>dispatch(deleteStringTC(row.id))}/>
+                                </>
+                            }
+                        </span>
                         {!edit ?
                             <>
-                                <TableCell align="right">{row.rowName} </TableCell>
-                                <TableCell align="right">{row.salary.toString()} </TableCell>
-                                <TableCell align="right">{row.equipmentCosts.toString()} </TableCell>
-                                <TableCell align="right">{row.mainCosts.toString()} </TableCell>
-                                <TableCell align="right">{row.estimatedProfit.toString()} </TableCell>
+                                <span>{row.rowName} </span>
+                                <span>{row.salary.toString()} </span>
+                                <span>{row.equipmentCosts.toString()} </span>
+                                <span>{row.mainCosts.toString()} </span>
+                                <span>{row.estimatedProfit.toString()} </span>
                             </>
                             :
-                            <>
+                            <div>
+                                {/*<form >*/}
+                                {/*    <input placeholder={row.rowName}/>*/}
+                                {/*    <input placeholder={row.salary.toString()}/>*/}
+                                {/*    <input placeholder={row.equipmentCosts.toString()}/>*/}
+                                {/*    <input placeholder={row.mainCosts.toString()}/>*/}
+                                {/*    <input placeholder={row.estimatedProfit.toString()}/>*/}
+                                {/*</form>*/}
 
-                                <div>
-                                    <form>
-                                        <input placeholder={row.rowName}/>
-                                        <input placeholder={row.salary.toString()}/>
-                                        <input placeholder={row.equipmentCosts.toString()}/>
-                                        <input placeholder={row.mainCosts.toString()}/>
-                                        <input placeholder={row.estimatedProfit.toString()}/>
-                                    </form>
-                                </div>
+                            <RowForm rID={row.id}/>
 
-
-                            </>
+                            </div>
                         }
 
-                    </TableRow>
+                    </div>
                     <span style={{paddingLeft: '10px'}}>
                         <TBody tree={row.child} setEdit={setEdit}/>
                     </span>
 
-                </>
+                </div>
             ))}
 
-        </TableBody>
+        </div>
 
     );
 };

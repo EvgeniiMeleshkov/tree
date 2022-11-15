@@ -1,4 +1,4 @@
-import {AppDispatch} from '../redux/store';
+import {AppDispatch, TypedDispatch} from '../redux/store';
 import {api} from '../api/api';
 
 export type EntityType = {
@@ -99,15 +99,23 @@ export const setEditModeAC = (value: boolean, id: number) => {
     } as const
 }
 
-export const setTreeTC = () => async (dispatch: AppDispatch) => {
+export const setTreeTC = () => async (dispatch: TypedDispatch) => {
     const res = await api.getTreeRows()
-
     dispatch(setTreeAC(res.data))
 }
-export const createStringTC = (rowName: string, parentId: null | number) => async (dispatch: AppDispatch) => {
+export const createStringTC = (rowName: string, parentId: null | number) => async (dispatch: TypedDispatch) => {
     const res = await api.createRowInEntity(rowName, parentId)
-    console.log(res.data.current)
     dispatch(createStringAC(res.data.current))
+}
+export const updateStringTC = (rID: number, entity: EntityType) => async (dispatch: TypedDispatch) => {
+    const res = await api.updateRow(rID)
+    console.log(res.data.current)
+    //dispatch(createStringAC(res.data.current))
+}
+export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch) => {
+    const res = await api.deleteRow(rID)
+    console.log(res.data.current)
+    dispatch(setTreeTC())
 }
 
 export type SetTreeACType = ReturnType<typeof setTreeAC>

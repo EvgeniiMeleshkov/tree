@@ -27,7 +27,7 @@ export const api = {
     updateRow(rID: number) {
         return instance.post(`${rID}/update`)
     },
-    deleteRow() {
-        return instance.delete(`/auth/me`)
+    deleteRow(rID: number) {
+        return instance.delete(`${rID}/delete`)
     }
 }

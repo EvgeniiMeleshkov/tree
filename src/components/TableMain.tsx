@@ -1,45 +1,38 @@
 import React, {useEffect} from 'react';
-import {Paper, TableBody, TableCell, TableContainer, TableHead, TableRow, Table} from '@mui/material';
-import {createStringTC, EntityType, setEditModeAC, setTreeTC} from '../reducer/reducer';
+import {EntityType, setEditModeAC, setTreeTC} from '../reducer/reducer';
 import {useSelector} from 'react-redux';
 import {AppRootStateType, useTypedDispatch} from '../redux/store';
-import FolderSharpIcon from '@mui/icons-material/FolderSharp';
 import TBody from './TBody';
 
 const TableMain = () => {
     const tree = useSelector<AppRootStateType, EntityType[]>(state => state.app.tree)
 
     const dispatch = useTypedDispatch()
-    useEffect(()=>{
+    useEffect(() => {
         dispatch(setTreeTC())
-    },[])
+    }, [])
     const setEdit = (id: number) => {
         dispatch(setEditModeAC(true, id))
     }
 
 
-
     return (
-        <TableContainer component={Paper}>
+        <div>
             <div>
                 Строительно-монтажные работы
             </div>
-            <Table aria-label="simple table">
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Уровень</TableCell>
-                        <TableCell align="right">Наименование работ</TableCell>
-                        <TableCell align="right">Основная з/п</TableCell>
-                        <TableCell align="right">Оборудование</TableCell>
-                        <TableCell align="right">Накладные расходы</TableCell>
-                        <TableCell align="right">Сметная прибыль</TableCell>
-                    </TableRow>
-                </TableHead>
+            <div style={{display: 'flex', flexDirection: 'row'}}>
+                <div>Уровень</div>
+                <div>Наименование работ</div>
+                <div>Основная з/п</div>
+                <div>Оборудование</div>
+                <div>Накладные расходы</div>
+                <div>Сметная прибыль</div>
+            </div>
+            <TBody tree={tree} setEdit={setEdit}/>
 
-                <TBody tree={tree} setEdit={setEdit} />
-            </Table>
 
-        </TableContainer>
+        </div>
     );
 };
 
