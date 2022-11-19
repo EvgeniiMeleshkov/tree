@@ -25,8 +25,15 @@ export const api = {
                 "supportCosts": 0
             })
     },
-    updateRow(rID: number, data: EntityType) {
-        return instance.post(`${rID}/update`, data)
+    updateRow(data: EntityType) {
+        return instance.post(`${data.id}/update`, {
+            "machineOperatorSalary": 0,
+            "materials": 0,
+            "mimExploitation": 0,
+            "overheads": 0,
+            "supportCosts": 0,
+            ...data
+        })
     },
     deleteRow(rID: number) {
         return instance.delete(`${rID}/delete`)

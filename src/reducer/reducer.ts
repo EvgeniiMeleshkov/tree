@@ -1,43 +1,33 @@
-import {AppRootStateType, TypedDispatch} from '../redux/store';
+import {TypedDispatch} from '../redux/store';
 import {api} from '../api/api';
-import {RowFormValuesType} from '../components/RowForm';
+
+
+
 
 export type EntityType = {
-    'id': number,
-    'rowName': string,
-    'total': number,
-    'salary': number,
-    'mimExploitation': number,
-    'machineOperatorSalary': number,
-    'materials': number,
-    'mainCosts': number,
-    'supportCosts': number,
-    'equipmentCosts': number,
-    'overheads': number,
-    'estimatedProfit': number,
-    'child': any
+    id: number,
+    rowName: string,
+    salary: number,
+    mainCosts: number,
+    equipmentCosts: number,
+    estimatedProfit: number,
+    child: EntityType[]
 }
-export type TreeType = Array<EntityType>
+
 export type InitType = {
     editeMode: boolean
-    tree: TreeType
+    tree: EntityType[]
 }
 const initialState: InitType = {
     editeMode: false,
     tree: [{
-        'id': 0,
-        'rowName': 'test',
-        'total': 0,
-        'salary': 0,
-        'mimExploitation': 0,
-        'machineOperatorSalary': 0,
-        'materials': 0,
-        'mainCosts': 0,
-        'supportCosts': 0,
-        'equipmentCosts': 0,
-        'overheads': 0,
-        'estimatedProfit': 0,
-        'child': []
+        id: 0,
+        rowName: 'test',
+        salary: 0,
+        mainCosts: 0,
+        equipmentCosts: 0,
+        estimatedProfit: 0,
+        child: [] as EntityType[]
     }]
 }
 
@@ -48,14 +38,42 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
         case 'APP/SET-TREE':
             return {...state, tree: action.payload.tree}
         case 'APP/CREATE-STRING':
-            return {...state, tree: [...state.tree, action.payload.entity]}
-        case 'APP/UPDATE-STRING':
-            return {...state, tree: state.tree.map(el => el.id === action.payload.id
-                ? {...el, ...action.payload.str}
-                    : el
-                )}
-        case 'APP/DELETE-STRING':
             return {...state}
+        case 'APP/UPDATE-STRING':
+            if(action.payload.parentStr.length === 0) {
+                return {
+                    ...state,
+                    tree: state.tree.map(el => el.id === action.payload.id
+                        ? {...el, ...action.payload.str}
+                        : el
+                    )
+                }
+            }
+            else {
+               return {
+                   ...state,
+                   tree: state.tree.map(el => {
+                       if(el.id === action.payload.parentStr[0].id) {
+                           return {...el, ...action.payload.parentStr[0], child: el.child.map(e => e.id === action.payload.id
+                                   ? {...e, ...action.payload.str}
+                                   : e
+                               )}
+                       }
+                       else {
+                            return el
+                       }
+                       // return el.id === action.payload.parentStr[0].id
+                       // ? {...el, ...action.payload.parentStr[0], child: el.child.map(e => e.id === action.payload.id
+                       //             ? {...e, ...action.payload.str}
+                       //             : e
+                       //         )}
+                       // : el
+                   })
+               }
+            }
+
+        case 'APP/DELETE-STRING':
+            return {...state, tree: state.tree.filter(el => el.id !== action.payload.id)}
         default:
             return {...state}
     }
@@ -77,20 +95,21 @@ export const createStringAC = (entity: EntityType) => {
         }
     } as const
 }
-export const updateStringAC = (id: number, str: EntityType) => {
+export const updateStringAC = (id: number, str: EntityType, parentStr: EntityType[] | []) => {
     return {
         type: 'APP/UPDATE-STRING',
         payload: {
             id,
-            str
+            str,
+            parentStr
         }
     } as const
 }
-export const deleteStringAC = (tree: EntityType) => {
+export const deleteStringAC = (id: number) => {
     return {
         type: 'APP/DELETE-STRING',
         payload: {
-            tree
+            id
         }
     } as const
 }
@@ -112,19 +131,20 @@ export const createStringTC = (rowName: string, parentId: null | number) => asyn
     const res = await api.createRowInEntity(rowName, parentId)
     dispatch(createStringAC(res.data.current))
 }
-export const updateStringTC = (rID: number, data: RowFormValuesType) =>
-    async (dispatch: TypedDispatch, getState: () => AppRootStateType) => {
-    const old = getState().app.tree.find(el => el.id === rID)!
-        const newData = {...old, ...data}
-        console.log(newData)
-    const res = await api.updateRow(rID, newData)
-    console.log(res.data.current)
-    dispatch(updateStringAC(rID, res.data.current))
-}
+export const updateStringTC = (rID: number, data: EntityType) =>
+    async (dispatch: TypedDispatch) => {
+
+        console.log(data.rowName, data.id)
+        const newData = {...data}
+        const res = await api.updateRow(newData)
+
+        dispatch(updateStringAC(data.id, res.data.current, res.data.changed))
+
+    }
 export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch) => {
     const res = await api.deleteRow(rID)
     console.log(res.data.current)
-    dispatch(setTreeTC())
+    dispatch(deleteStringAC(rID))
 }
 
 export type SetTreeACType = ReturnType<typeof setTreeAC>
@@ -132,4 +152,9 @@ export type CreateStringACType = ReturnType<typeof createStringAC>
 export type UpdateStringACType = ReturnType<typeof updateStringAC>
 export type DeleteStringACType = ReturnType<typeof deleteStringAC>
 export type SetEditModeACType = ReturnType<typeof setEditModeAC>
-export type AppActionsType = SetTreeACType | CreateStringACType | UpdateStringACType | DeleteStringACType | SetEditModeACType
+export type AppActionsType =
+    SetTreeACType
+    | CreateStringACType
+    | UpdateStringACType
+    | DeleteStringACType
+    | SetEditModeACType

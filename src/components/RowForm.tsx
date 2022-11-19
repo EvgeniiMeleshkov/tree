@@ -1,34 +1,25 @@
 import React from 'react';
 import {Input} from '@mui/material';
 import {useFormik} from 'formik';
-import {AppRootStateType, useTypedDispatch} from '../redux/store';
-import {useSelector} from 'react-redux';
-import {EntityType, setEditModeAC, updateStringTC} from '../reducer/reducer';
+import {useTypedDispatch} from '../redux/store';
+import {EntityType, updateStringTC} from '../reducer/reducer';
 
-export type RowFormValuesType = {
-    rowName: string
-    salary: number
-    mainCosts: number
-    equipmentCosts: number
-    estimatedProfit: number
-}
 type RowFormPropsType = {
-    rID: number
+    row: EntityType
+    setEdit: (val: boolean) => void
 }
 
-const RowForm = ({rID}: RowFormPropsType) => {
-
-    const tree = useSelector<AppRootStateType, EntityType[]>(state => state.app.tree)
-    const row = tree.find(el => el.id === rID)!
+const RowForm = ({row, setEdit}: RowFormPropsType) => {
     const dispatch = useTypedDispatch()
 
     const formik = useFormik({
         initialValues: {
-            'rowName': row.rowName,
-            'salary': row.salary,
-            'mainCosts': row.mainCosts,
-            'equipmentCosts': row.equipmentCosts,
-            'estimatedProfit': row.estimatedProfit,
+            id: row.id,
+            rowName: row.rowName,
+            salary: row.salary,
+            mainCosts: row.mainCosts,
+            equipmentCosts: row.equipmentCosts,
+            estimatedProfit: row.estimatedProfit,
         },
         // validate: (values) => {
         //     const errors: FormikErrorsType = {}
@@ -45,9 +36,10 @@ const RowForm = ({rID}: RowFormPropsType) => {
         //     return errors
         // },
         onSubmit: values => {
-            dispatch(updateStringTC(rID, {...values}))
+            // @ts-ignore
+            dispatch(updateStringTC(row.id, {...values}))
             console.log(values)
-            dispatch(setEditModeAC(false, rID))
+            setEdit(false)
             // alert(JSON.stringify(values, null, 2));
             formik.resetForm()
         },

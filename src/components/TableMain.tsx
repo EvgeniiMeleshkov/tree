@@ -11,9 +11,6 @@ const TableMain = () => {
     useEffect(() => {
         dispatch(setTreeTC())
     }, [])
-    const setEdit = (id: number) => {
-        dispatch(setEditModeAC(true, id))
-    }
 
 
     return (
@@ -29,9 +26,9 @@ const TableMain = () => {
                 <div>Накладные расходы</div>
                 <div>Сметная прибыль</div>
             </div>
-            <TBody tree={tree} setEdit={setEdit}/>
-
-
+            <div>
+                {tree.map(el => <TBody key={el.id} row={el}/>)}
+            </div>
         </div>
     );
 };

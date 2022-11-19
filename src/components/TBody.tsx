@@ -1,74 +1,30 @@
 import React, {useState} from 'react';
-import {deleteStringTC, EntityType} from '../reducer/reducer';
-import FolderSharpIcon from '@mui/icons-material/FolderSharp';
-import TextSnippetSharpIcon from '@mui/icons-material/TextSnippetSharp';
-import DeleteForeverOutlinedIcon from '@mui/icons-material/DeleteForeverOutlined';
-import {useSelector} from 'react-redux';
-import {AppRootStateType, useTypedDispatch} from '../redux/store';
+import {EntityType} from '../reducer/reducer';
 import RowForm from './RowForm';
+import Icons from './Icons';
+import RowInfo from './RowInfo';
 
 type TBodyPropsType = {
-    tree: EntityType[]
-    setEdit: (rID: number) => void
+    row: EntityType
 }
 
-const TBody = ({tree, setEdit}: TBodyPropsType) => {
-    const edit = useSelector<AppRootStateType, boolean>(state => state.app.editeMode)
-    const dispatch = useTypedDispatch()
-
-    const [flag, setFlag] = useState(true)
+const TBody = ({row}: TBodyPropsType) => {
+    const [edit, setEdit] = useState(false)
 
     return (
-        <div>
-            {tree.map((row: EntityType) => (
-                <div key={row.id}>
-                    <div onBlur={edit ?
-                        () => {
-                            //dispatch(createStringTC('TEST', row.id))
-                            //dispatch(setEditModeAC(false, row.id))
-                        } : () => {
-                        }
-                    } onDoubleClick={() => setEdit(row.id)} key={row.id}>
-                        <span onMouseLeave={() => setFlag(true)}>
-                            {flag ?
-                                <FolderSharpIcon onMouseOver={() => setFlag(false)}
-                                                 style={{color: row.child.length > 0 ? 'blue' : 'green'}}/>
-                                :
-                                <>
-                                    <FolderSharpIcon style={{color: row.child.length > 0 ? 'blue' : 'green'}}>
-
-                                    </FolderSharpIcon>
-                                    <TextSnippetSharpIcon/>
-                                    <DeleteForeverOutlinedIcon onClick={() => dispatch(deleteStringTC(row.id))}/>
-                                </>
-                            }
-                        </span>
-                        {!edit ?
-                            <>
-                                <span>{row.rowName} </span>
-                                <span>{row.salary.toString()} </span>
-                                <span>{row.equipmentCosts.toString()} </span>
-                                <span>{row.mainCosts.toString()} </span>
-                                <span>{row.estimatedProfit.toString()} </span>
-                            </>
-                            :
-                            <div>
-
-                                <RowForm rID={row.id}/>
-
-                            </div>
-                        }
-
-                    </div>
-                    <span style={{paddingLeft: '10px'}}>
-                        <TBody tree={row.child} setEdit={setEdit}/>
-                    </span>
-
-                </div>
-            ))}
-
+        <div key={row.id}>
+            <div onDoubleClick={() => setEdit(true)}>
+                <Icons key={row.id} rID={row.id}/>
+                {!edit ?
+                    <RowInfo row={row}/>
+                    :
+                    <RowForm setEdit={setEdit} row={row}/>
+                }
+            </div>
+            <span style={{paddingLeft: '10px'}}>
+                {row.child.map(el => <TBody key={el.id} row={el}/>)}
+            </span>
         </div>
-
     );
 };
 
