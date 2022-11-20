@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import {EntityType, setEditModeAC, setTreeTC} from '../reducer/reducer';
+import {EntityType, setTreeTC} from '../reducer/reducer';
 import {useSelector} from 'react-redux';
 import {AppRootStateType, useTypedDispatch} from '../redux/store';
 import TBody from './TBody';

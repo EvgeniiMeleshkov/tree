@@ -37,3 +37,14 @@ export function findNode(id: number, currentNode: EntityType): EntityType | bool
         return false;
     }
 }
+
+export const joinArrs = (oldArr: EntityType[], newArr: EntityType[]) => {
+    return oldArr.map(el => {
+        for (let i = 0; i < newArr.length; i++) {
+            if(el.id === newArr[i].id) {
+                i++
+                return {...el, ...newArr[i]}
+            }
+        }
+    })
+}

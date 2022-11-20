@@ -40,7 +40,7 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
         case 'APP/CREATE-STRING':
             return {...state}
         case 'APP/UPDATE-STRING':
-            if(action.payload.parentStr.length === 0) {
+            if(action.payload.parentStr.length < 1) {
                 return {
                     ...state,
                     tree: state.tree.map(el => el.id === action.payload.id
@@ -48,28 +48,15 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
                         : el
                     )
                 }
-            }
-            else {
-               return {
-                   ...state,
-                   tree: state.tree.map(el => {
-                       if(el.id === action.payload.parentStr[0].id) {
-                           return {...el, ...action.payload.parentStr[0], child: el.child.map(e => e.id === action.payload.id
-                                   ? {...e, ...action.payload.str}
-                                   : e
-                               )}
-                       }
-                       else {
-                            return el
-                       }
-                       // return el.id === action.payload.parentStr[0].id
-                       // ? {...el, ...action.payload.parentStr[0], child: el.child.map(e => e.id === action.payload.id
-                       //             ? {...e, ...action.payload.str}
-                       //             : e
-                       //         )}
-                       // : el
-                   })
-               }
+            } else {
+                return {
+                ...state, tree: state.tree.map(el => {
+                    const a = action.payload.parentStr.find(e => el.id === e.id)
+                        return el.id === a?.id
+                        ? {...el, ...a}
+                            : el
+                    })
+                }
             }
 
         case 'APP/DELETE-STRING':
@@ -125,7 +112,19 @@ export const setEditModeAC = (value: boolean, id: number) => {
 
 export const setTreeTC = () => async (dispatch: TypedDispatch) => {
     const res = await api.getTreeRows()
-    dispatch(setTreeAC(res.data))
+    function flat(array: EntityType[]) {
+        let result: EntityType[] = [];
+        array.forEach(function (a) {
+            result.push(a);
+            if (Array.isArray(a.child)) {
+                result = result.concat(flat(a.child));
+            }
+        });
+        return result;
+    }
+
+    console.log(flat(res.data))
+    dispatch(setTreeAC(flat(res.data)))
 }
 export const createStringTC = (rowName: string, parentId: null | number) => async (dispatch: TypedDispatch) => {
     const res = await api.createRowInEntity(rowName, parentId)
@@ -133,13 +132,9 @@ export const createStringTC = (rowName: string, parentId: null | number) => asyn
 }
 export const updateStringTC = (rID: number, data: EntityType) =>
     async (dispatch: TypedDispatch) => {
-
-        console.log(data.rowName, data.id)
         const newData = {...data}
         const res = await api.updateRow(newData)
-
         dispatch(updateStringAC(data.id, res.data.current, res.data.changed))
-
     }
 export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch) => {
     const res = await api.deleteRow(rID)

@@ -21,9 +21,6 @@ const TBody = ({row}: TBodyPropsType) => {
                     <RowForm setEdit={setEdit} row={row}/>
                 }
             </div>
-            <span style={{paddingLeft: '10px'}}>
-                {row.child.map(el => <TBody key={el.id} row={el}/>)}
-            </span>
         </div>
     );
 };
