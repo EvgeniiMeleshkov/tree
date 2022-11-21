@@ -1,16 +1,17 @@
-import {TypedDispatch} from '../redux/store';
+import {AppRootStateType, TypedDispatch} from '../redux/store';
 import {api} from '../api/api';
 
 
 
 
 export type EntityType = {
-    id: number,
-    rowName: string,
-    salary: number,
-    mainCosts: number,
-    equipmentCosts: number,
-    estimatedProfit: number,
+    total: number
+    id: number
+    rowName: string
+    salary: number
+    mainCosts: number
+    equipmentCosts: number
+    estimatedProfit: number
     child: EntityType[]
 }
 
@@ -21,6 +22,7 @@ export type InitType = {
 const initialState: InitType = {
     editeMode: false,
     tree: [{
+        total: 0,
         id: 0,
         rowName: 'test',
         salary: 0,
@@ -38,7 +40,7 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
         case 'APP/SET-TREE':
             return {...state, tree: action.payload.tree}
         case 'APP/CREATE-STRING':
-            return {...state}
+            return {...state, tree: [...action.payload.tree]}
         case 'APP/UPDATE-STRING':
             if(action.payload.parentStr.length < 1) {
                 return {
@@ -60,7 +62,7 @@ export const appReducer = (state = initialState, action: AppActionsType) => {
             }
 
         case 'APP/DELETE-STRING':
-            return {...state, tree: state.tree.filter(el => el.id !== action.payload.id)}
+            return {...state, tree: [...action.payload.tree]}
         default:
             return {...state}
     }
@@ -74,11 +76,11 @@ export const setTreeAC = (tree: EntityType[]) => {
         }
     } as const
 }
-export const createStringAC = (entity: EntityType) => {
+export const createStringAC = (tree: EntityType[]) => {
     return {
         type: 'APP/CREATE-STRING',
         payload: {
-            entity
+            tree
         }
     } as const
 }
@@ -92,11 +94,11 @@ export const updateStringAC = (id: number, str: EntityType, parentStr: EntityTyp
         }
     } as const
 }
-export const deleteStringAC = (id: number) => {
+export const deleteStringAC = (tree: EntityType[]) => {
     return {
         type: 'APP/DELETE-STRING',
         payload: {
-            id
+            tree
         }
     } as const
 }
@@ -126,20 +128,48 @@ export const setTreeTC = () => async (dispatch: TypedDispatch) => {
     console.log(flat(res.data))
     dispatch(setTreeAC(flat(res.data)))
 }
-export const createStringTC = (rowName: string, parentId: null | number) => async (dispatch: TypedDispatch) => {
-    const res = await api.createRowInEntity(rowName, parentId)
-    dispatch(createStringAC(res.data.current))
+export const createStringTC = (parentId: null | number) => async (dispatch: TypedDispatch, getState: ()=> AppRootStateType) => {
+    let tree = getState().app.tree
+    const res = await api.createRowInEntity(parentId)
+    let parent = tree.find(el => el.id === parentId)
+    if(parentId === null) {
+        tree = [...tree, res.data.current]
+    } else {
+        const pID = tree.findIndex((el)=>el.id === parentId)
+        if(parent){
+            tree.map(el => el.id === parentId ? el.total += 1 : el)
+            tree.splice( pID + parent.total, 0, res.data.current)
+        }
+    }
+    dispatch(createStringAC(tree))
 }
 export const updateStringTC = (rID: number, data: EntityType) =>
     async (dispatch: TypedDispatch) => {
         const newData = {...data}
         const res = await api.updateRow(newData)
-        dispatch(updateStringAC(data.id, res.data.current, res.data.changed))
+
+        let arr = res.data.changed
+        let entity = res.data.current
+
+        if(arr.length > 0) {
+            arr = [...arr, entity]
+        }
+        dispatch(updateStringAC(data.id, res.data.current, arr))
     }
-export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch) => {
+export const deleteStringTC = (rID: number) => async (dispatch: TypedDispatch, getState: ()=> AppRootStateType) => {
+    let tree = getState().app.tree
     const res = await api.deleteRow(rID)
-    console.log(res.data.current)
-    dispatch(deleteStringAC(rID))
+    const parent = tree.find(el=>el.id === rID)
+
+    if(parent && parent.total === 0) {
+        tree = tree.filter(el => el.id !== rID)
+    } else {
+        const pID = tree.findIndex((el)=>el.id === rID)
+        parent &&
+        tree.splice( pID , parent.total + 1)
+        console.log(tree)
+    }
+    dispatch(deleteStringAC(tree))
 }
 
 export type SetTreeACType = ReturnType<typeof setTreeAC>

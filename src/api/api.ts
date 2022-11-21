@@ -4,13 +4,13 @@ import {EntityType} from '../reducer/reducer';
 const instance = axios.create({
     baseURL: 'http://185.244.172.108:8081/v1/outlay-rows/entity/2493/row/'
 })
-// const eID = 2493
+// my eID: 2493
 
 export const api = {
     getTreeRows() {
         return instance.get(`list`)
     },
-    createRowInEntity(rowName: string, parentId: null | number) {
+    createRowInEntity(parentId: null | number) {
         return instance.post(`create`, {
                 "equipmentCosts": 0,
                 "estimatedProfit": 0,
@@ -20,7 +20,7 @@ export const api = {
                 "mimExploitation": 0,
                 "overheads": 0,
                 "parentId": parentId,
-                "rowName": rowName,
+                "rowName": '',
                 "salary": 0,
                 "supportCosts": 0
             })
