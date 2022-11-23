@@ -1,9 +1,6 @@
 import {AppRootStateType, TypedDispatch} from '../redux/store';
 import {api} from '../api/api';
 
-
-
-
 export type EntityType = {
     total: number
     id: number
@@ -124,8 +121,6 @@ export const setTreeTC = () => async (dispatch: TypedDispatch) => {
         });
         return result;
     }
-
-    console.log(flat(res.data))
     dispatch(setTreeAC(flat(res.data)))
 }
 export const createStringTC = (parentId: null | number) => async (dispatch: TypedDispatch, getState: ()=> AppRootStateType) => {
@@ -143,6 +138,7 @@ export const createStringTC = (parentId: null | number) => async (dispatch: Type
     }
     dispatch(createStringAC(tree))
 }
+
 export const updateStringTC = (rID: number, data: EntityType) =>
     async (dispatch: TypedDispatch) => {
         const newData = {...data}
